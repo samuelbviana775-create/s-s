@@ -1,105 +1,99 @@
-# s-s
-C:\Users\Pichau\Desktop\fors\ss.html
-C:\Users\Pichau\Desktop\fors\ss.css
-C:\Users\Pichau\Desktop\fors\ss.js
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: #000;
-  height: 100%;
-  width: 100%;
-  overscroll-behavior: none;
-  touch-action: none;
-}
-
-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: block;
-  background: #000;
-  cursor: pointer;
-  touch-action: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.mobile-link {
-  position: fixed;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  z-index: 20;
-  pointer-events: auto;
-}
-
-.mobile-link a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #fff;
-  font-size: 2.2rem;
-  line-height: 1;
-  text-decoration: none;
-  box-shadow: 0 10px 28px rgba(255, 0, 98, 0.25);
-  backdrop-filter: blur(4px);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.mobile-link a:active {
-  transform: scale(0.96);
-}
-
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <title>Heart to I Love You Animation</title>
-  <link rel="stylesheet" href="./ss.css">
-</head>
-<body>
-  <canvas id="heart"></canvas>
-  <script src="./ss.js"></script>
-</body>
-</html>
-
-
-
-
-
-
 window.requestAnimationFrame =
   window.requestAnimationFrame ||
   window.webkitRequestAnimationFrame ||
   window.mozRequestAnimationFrame ||
-   # s-s
+  window.msRequestAnimationFrame ||
+  function (cb) { window.setTimeout(cb, 16); };
 
-   Animação interativa de um coração que se transforma na mensagem “I LOVE YOU”.
+var isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(navigator.userAgent);
+var canvas = document.getElementById('heart');
+var ctx = canvas.getContext('2d');
+var koef = 1;
+var width, height;
 
-   Abra [index.html](index.html) no navegador. Clique ou toque na tela para criar efeitos de brilho e pétalas.
+function getViewportSize() {
+  var w = canvas.clientWidth || document.documentElement.clientWidth || window.innerWidth;
+  var h = canvas.clientHeight || document.documentElement.clientHeight || window.innerHeight;
+  return [w, h];
+}
 
-   Arquivos principais:
+var rand = Math.random;
+function getThemeColor() {
+  return "hsla(350," + (~~(40 * rand() + 100)) + "%," + (~~(60 * rand() + 20)) + "%,.4)";
+}
 
-   - [index.html](index.html)
-   - [ss.css](ss.css)
-   - [ss.js](ss.js)
+var heartPosition = function (rad) {
+  return [
+    Math.pow(Math.sin(rad), 3),
+    -(15 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad))
+  ];
+};
+
+var scaleAndTranslate = function (pos, sx, sy, dx, dy) {
+  return [dx + pos[0] * sx, dy + pos[1] * sy];
+};
+
+var traceCount = isMobile ? 18 : 32;
+var pointsOrigin = [];
+var dr = isMobile ? 0.08 : 0.035;
+
+for (var i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), 210, 13, 0, 0));
+for (var i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), 150, 9, 0, 0));
+for (var i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), 90, 5, 0, 0));
+var heartPointsCount = pointsOrigin.length;
+
+var GLYPH_STROKES = {
+  'I': [[0.5, 0.05], [0.5, 0.95]],
+  'L': [[0.2, 0.05], [0.2, 0.95], [0.8, 0.95]],
+  'S': [[0.78, 0.08], [0.26, 0.08], [0.26, 0.22], [0.7, 0.22], [0.7, 0.42], [0.27, 0.42], [0.27, 0.58], [0.74, 0.58], [0.74, 0.78], [0.25, 0.78], [0.25, 0.92], [0.78, 0.92]],
+  'F': [[0.22, 0.08], [0.22, 0.92], [0.82, 0.08], [0.22, 0.5], [0.72, 0.5]],
+  'O': null,
+  'V': [[0.15, 0.05], [0.5, 0.95], [0.85, 0.05]],
+  'E': [[0.8, 0.05], [0.2, 0.05], [0.2, 0.5], [0.7, 0.5], [0.2, 0.5], [0.2, 0.95], [0.8, 0.95]],
+  'Y': [[0.15, 0.05], [0.5, 0.5], [0.85, 0.05], [0.5, 0.5], [0.5, 0.95]],
+  'U': [[0.2, 0.05], [0.2, 0.72], [0.35, 0.95], [0.65, 0.95], [0.8, 0.72], [0.8, 0.05]]
+};
+
+function interpolatePolyline(pts, count) {
+  var full = pts.slice();
+  for (var i = pts.length - 2; i > 0; i--) full.push(pts[i]);
+
+  var segLens = [];
+  var totalLen = 0;
+  for (var i = 0; i < full.length - 1; i++) {
+    var dx = full[i + 1][0] - full[i][0];
+    var dy = full[i + 1][1] - full[i][1];
+    var l = Math.sqrt(dx * dx + dy * dy);
+    segLens.push(l);
+    totalLen += l;
+  }
+
+  var result = [];
+  var step = totalLen / count;
+
+  for (var k = 0; k < count; k++) {
+    var targetDist = k * step;
+    var acc = 0;
+    for (var s = 0; s < segLens.length; s++) {
+      if (acc + segLens[s] >= targetDist || s === segLens.length - 1) {
+        var remain = targetDist - acc;
+        var ratio = segLens[s] > 0 ? (remain / segLens[s]) : 0;
+        var px = full[s][0] + (full[s + 1][0] - full[s][0]) * ratio;
+        var py = full[s][1] + (full[s + 1][1] - full[s][1]) * ratio;
+        result.push([px, py]);
+        break;
+      }
+      acc += segLens[s];
+    }
+  }
+  while (result.length < count) result.push(full[full.length - 1]);
+  return result;
+}
+
+function generateCharPoints(ch, count, x, y, w, h) {
+  var res = [];
+  if (ch === 'O') {
+    for (var i = 0; i < count; i++) {
       var rad = (i / count) * Math.PI * 2;
       res.push([
         x + w * 0.5 + w * 0.38 * Math.cos(rad),
